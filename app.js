@@ -1,4 +1,8 @@
 const COUPLE_START_DATE = "2026-06-08T14:59:00+08:00";
+const SUPABASE_URL = "https://kdmwfcpzbqpxmdudswuf.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_YvmO4rjd55nVj-zrtP4Bcw_SdSM0OdM";
+const REMOTE_STATE_ID = "main";
+const REMOTE_TABLE = "two_of_us_state";
 
 const basePeople = [
   { id: "me", color: "#bd4f61", soft: "#fde7eb" },
@@ -13,33 +17,147 @@ const seedData = {
   checkins: [],
   memories: [],
   wishes: [],
-  anniversaries: [
-    { title: "在一起纪念日", date: "2026-06-08" }
-  ],
+  anniversaries: [{ title: "在一起纪念日", date: "2026-06-08" }],
   letters: [],
   photos: []
 };
 
-const storageKey = "two-of-us-data-v3";
-const state = loadState();
+const storageKey = "two-of-us-data-v4";
+const supabaseClient = window.supabase
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
+  : null;
 
-function loadState() {
+let state = structuredClone(seedData);
+let lastRemoteUpdatedAt = "";
+let remoteAvailable = false;
+let saveQueue = Promise.resolve();
+
+function normalizeState(value) {
+  return {
+    ...structuredClone(seedData),
+    ...(value || {}),
+    profiles: { ...seedData.profiles, ...(value?.profiles || {}) },
+    anniversaries: value?.anniversaries?.length ? value.anniversaries : seedData.anniversaries,
+    checkins: Array.isArray(value?.checkins) ? value.checkins : [],
+    memories: Array.isArray(value?.memories) ? value.memories : [],
+    wishes: Array.isArray(value?.wishes) ? value.wishes : [],
+    letters: Array.isArray(value?.letters) ? value.letters : [],
+    photos: Array.isArray(value?.photos) ? value.photos : []
+  };
+}
+
+function loadLocalState() {
   const stored = localStorage.getItem(storageKey);
-  if (!stored) {
-    localStorage.setItem(storageKey, JSON.stringify(seedData));
-    return structuredClone(seedData);
-  }
+  if (!stored) return structuredClone(seedData);
 
   try {
-    return { ...structuredClone(seedData), ...JSON.parse(stored) };
+    return normalizeState(JSON.parse(stored));
   } catch {
-    localStorage.setItem(storageKey, JSON.stringify(seedData));
     return structuredClone(seedData);
   }
 }
 
-function saveState() {
+function saveLocalState() {
   localStorage.setItem(storageKey, JSON.stringify(state));
+}
+
+async function loadRemoteState() {
+  if (!supabaseClient) return null;
+
+  const { data, error } = await supabaseClient
+    .from(REMOTE_TABLE)
+    .select("data, updated_at")
+    .eq("id", REMOTE_STATE_ID)
+    .maybeSingle();
+
+  if (error) {
+    console.warn("Supabase 读取失败，当前使用本地数据。请确认已执行 supabase-setup.sql。", error);
+    remoteAvailable = false;
+    updateSyncStatus("Supabase 未连接，当前为本地暂存");
+    return null;
+  }
+
+  remoteAvailable = true;
+  updateSyncStatus("Supabase 已连接，数据会自动同步");
+
+  if (!data) {
+    await saveRemoteState();
+    return null;
+  }
+
+  lastRemoteUpdatedAt = data.updated_at || "";
+  return normalizeState(data.data);
+}
+
+function saveState() {
+  saveLocalState();
+  if (!supabaseClient || !remoteAvailable) return;
+
+  saveQueue = saveQueue
+    .then(() => saveRemoteState())
+    .catch((error) => {
+      console.warn("Supabase 保存失败，数据已暂存在本地。", error);
+      remoteAvailable = false;
+      updateSyncStatus("Supabase 保存失败，当前为本地暂存");
+    });
+}
+
+async function saveRemoteState() {
+  const updatedAt = new Date().toISOString();
+  const { error } = await supabaseClient.from(REMOTE_TABLE).upsert({
+    id: REMOTE_STATE_ID,
+    data: state,
+    updated_at: updatedAt
+  });
+
+  if (error) throw error;
+  lastRemoteUpdatedAt = updatedAt;
+  updateSyncStatus("已同步到 Supabase");
+}
+
+async function refreshRemoteState() {
+  if (!supabaseClient || !remoteAvailable) return;
+
+  const { data, error } = await supabaseClient
+    .from(REMOTE_TABLE)
+    .select("data, updated_at")
+    .eq("id", REMOTE_STATE_ID)
+    .maybeSingle();
+
+  if (error || !data?.updated_at || data.updated_at <= lastRemoteUpdatedAt) return;
+
+  lastRemoteUpdatedAt = data.updated_at;
+  state = normalizeState(data.data);
+  saveLocalState();
+  syncProfileForm();
+  populatePersonSelects();
+  renderAll();
+}
+
+function subscribeToRemoteState() {
+  if (!supabaseClient || !remoteAvailable) return;
+
+  supabaseClient
+    .channel("two-of-us-state")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: REMOTE_TABLE, filter: `id=eq.${REMOTE_STATE_ID}` },
+      (payload) => {
+        if (!payload.new?.data || !payload.new?.updated_at || payload.new.updated_at <= lastRemoteUpdatedAt) return;
+        lastRemoteUpdatedAt = payload.new.updated_at;
+        state = normalizeState(payload.new.data);
+        saveLocalState();
+        syncProfileForm();
+        populatePersonSelects();
+        renderAll();
+      }
+    )
+    .subscribe();
+}
+
+function updateSyncStatus(message) {
+  const status = document.querySelector("#syncStatus");
+  if (status) status.textContent = message;
 }
 
 function getPeople() {
@@ -126,9 +244,7 @@ function renderPeople() {
   grid.innerHTML = "";
 
   people.forEach((person) => {
-    const latestCheckin = [...state.checkins]
-      .filter((item) => item.person === person.id)
-      .sort(latestFirst)[0];
+    const latestCheckin = [...state.checkins].filter((item) => item.person === person.id).sort(latestFirst)[0];
 
     const card = document.createElement("article");
     card.className = "person-card";
@@ -265,22 +381,21 @@ function deletePhoto(id) {
 function populatePersonSelects() {
   const people = getPeople();
   const previousValues = new Map(
-    ["#personSelect", "#memoryPersonSelect", "#letterFromSelect", "#letterToSelect", "#wishOwnerSelect"]
-      .map((selector) => {
+    ["#personSelect", "#memoryPersonSelect", "#letterFromSelect", "#letterToSelect", "#wishOwnerSelect"].map(
+      (selector) => {
         const element = document.querySelector(selector);
         return [selector, element?.value];
-      })
+      }
+    )
   );
   const simpleOptions = people.map((person) => `<option value="${person.id}">${person.name}</option>`).join("");
   const ownerOptions = `<option value="both">一起负责</option>${simpleOptions}`;
 
-  ["#personSelect", "#memoryPersonSelect", "#letterFromSelect", "#letterToSelect"].forEach(
-    (selector) => {
-      const select = document.querySelector(selector);
-      select.innerHTML = simpleOptions;
-      if (previousValues.get(selector)) select.value = previousValues.get(selector);
-    }
-  );
+  ["#personSelect", "#memoryPersonSelect", "#letterFromSelect", "#letterToSelect"].forEach((selector) => {
+    const select = document.querySelector(selector);
+    select.innerHTML = simpleOptions;
+    if (previousValues.get(selector)) select.value = previousValues.get(selector);
+  });
   const wishOwnerSelect = document.querySelector("#wishOwnerSelect");
   wishOwnerSelect.innerHTML = ownerOptions;
   if (previousValues.get("#wishOwnerSelect")) wishOwnerSelect.value = previousValues.get("#wishOwnerSelect");
@@ -296,10 +411,7 @@ function syncProfileForm() {
 }
 
 function bindForms() {
-  const today = new Date().toISOString().slice(0, 10);
-  document.querySelectorAll('input[type="date"]').forEach((input) => {
-    if (!input.value) input.value = today;
-  });
+  setDefaultDates();
 
   const energyRange = document.querySelector('#checkinForm input[name="energy"]');
   energyRange.addEventListener("input", () => {
@@ -435,8 +547,23 @@ function renderAll() {
   renderPhotos();
 }
 
-syncProfileForm();
-populatePersonSelects();
-bindForms();
-renderAll();
-setInterval(renderTimeTogether, 30000);
+async function initApp() {
+  state = loadLocalState();
+
+  const remoteState = await loadRemoteState();
+  if (remoteState) {
+    state = remoteState;
+    saveLocalState();
+  }
+
+  syncProfileForm();
+  populatePersonSelects();
+  bindForms();
+  renderAll();
+  subscribeToRemoteState();
+
+  setInterval(renderTimeTogether, 30000);
+  setInterval(refreshRemoteState, 8000);
+}
+
+initApp();

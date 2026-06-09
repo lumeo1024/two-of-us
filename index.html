@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Two of Us</title>
-    <link rel="stylesheet" href="./styles.css?v=20260609-4" />
+    <link rel="stylesheet" href="./styles.css?v=20260609-5" />
   </head>
   <body>
     <div class="app-shell">
@@ -77,6 +77,7 @@
             </label>
             <button type="submit">保存设置</button>
           </form>
+          <p class="sync-status" id="syncStatus">正在连接 Supabase...</p>
         </section>
 
         <section class="section-inner" id="checkin">
@@ -221,7 +222,7 @@
                 <p class="eyebrow">PHOTO WALL</p>
                 <h2>照片墙</h2>
               </div>
-              <p>上传你们想留下的照片，图片会保存在当前浏览器里。换设备或清理浏览器数据后需要重新上传。</p>
+              <p>上传你们想留下的照片，保存后会写入 Supabase 云端；如果连接失败，会先暂存在当前浏览器。</p>
             </div>
             <form class="panel photo-form" id="photoForm">
               <label>
@@ -244,6 +245,7 @@
       </main>
     </div>
 
-    <script src="./app.js?v=20260609-4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./app.js?v=20260609-5"></script>
   </body>
 </html>

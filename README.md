@@ -7,22 +7,27 @@
 - 在一起时间计数器
 - 关系仪表盘
 - 回忆时间线，可新增记录
-- 好感度记录和可视化
 - 未来愿望清单，可推进状态
 - 纪念日倒计时
-- 相册精选区
+- 支持上传的照片墙
 - 悄悄话和定时解锁
-- 本地 `localStorage` 数据保存
+- Supabase 云端同步，本地 `localStorage` 兜底
 
 ## 使用方式
 
-直接在浏览器打开 `index.html` 即可。
+直接在浏览器打开 `index.html` 即可。部署后推荐通过 GitHub Pages 访问。
 
 如果要修改在一起的开始时间，编辑 `app.js` 顶部的：
 
 ```js
-const COUPLE_START_DATE = "2025-10-01T20:00:00+08:00";
+const COUPLE_START_DATE = "2026-06-08T14:59:00+08:00";
 ```
+
+## Supabase
+
+在 Supabase SQL Editor 执行 `supabase-setup.sql`，然后页面会自动使用云端同步。
+
+当前前端使用的是 publishable key。不要把 `service_role` key 放进前端代码。
 
 ## 后续可扩展
 
