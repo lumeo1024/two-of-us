@@ -353,16 +353,29 @@ function advanceWish(wish) {
 
 function populatePersonSelects() {
   const people = getPeople();
+  const previousValues = new Map(
+    ["#personSelect", "#affectionPersonSelect", "#memoryPersonSelect", "#letterFromSelect", "#letterToSelect", "#wishOwnerSelect"]
+      .map((selector) => {
+        const element = document.querySelector(selector);
+        return [selector, element?.value];
+      })
+  );
   const simpleOptions = people.map((person) => `<option value="${person.id}">${person.name}</option>`).join("");
   const ownerOptions = `<option value="both">一起负责</option>${simpleOptions}`;
 
   ["#personSelect", "#affectionPersonSelect", "#memoryPersonSelect", "#letterFromSelect", "#letterToSelect"].forEach(
     (selector) => {
-      document.querySelector(selector).innerHTML = simpleOptions;
+      const select = document.querySelector(selector);
+      select.innerHTML = simpleOptions;
+      if (previousValues.get(selector)) select.value = previousValues.get(selector);
     }
   );
-  document.querySelector("#wishOwnerSelect").innerHTML = ownerOptions;
-  document.querySelector("#letterToSelect").value = people[1]?.id || people[0].id;
+  const wishOwnerSelect = document.querySelector("#wishOwnerSelect");
+  wishOwnerSelect.innerHTML = ownerOptions;
+  if (previousValues.get("#wishOwnerSelect")) wishOwnerSelect.value = previousValues.get("#wishOwnerSelect");
+  if (!previousValues.get("#letterToSelect")) {
+    document.querySelector("#letterToSelect").value = people[1]?.id || people[0].id;
+  }
 }
 
 function syncProfileForm() {
@@ -407,8 +420,8 @@ function bindForms() {
     saveState();
     event.currentTarget.reset();
     setDefaultDates();
-    renderPeople();
-    renderParticipation();
+    populatePersonSelects();
+    renderAll();
   });
 
   const affectionForm = document.querySelector("#affectionForm");
