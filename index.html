@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Two of Us</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#home" aria-label="Two of Us 首页">
+          <span class="brand-mark">2</span>
+          <span>Two of Us</span>
+        </a>
+        <nav class="nav" aria-label="主要导航">
+          <a href="#memories">回忆</a>
+          <a href="#affection">好感度</a>
+          <a href="#wishes">愿望</a>
+          <a href="#anniversaries">纪念日</a>
+          <a href="#gallery">相册</a>
+          <a href="#letters">悄悄话</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="hero" id="home">
+          <img class="hero-image" src="./assets/hero-memory-journal.png" alt="一本打开的回忆手账、照片和日历" />
+          <div class="hero-overlay"></div>
+          <div class="hero-content">
+            <p class="eyebrow">PRIVATE MEMORY SPACE</p>
+            <h1>Two of Us</h1>
+            <p class="hero-copy">把一起经历的小事、心动的瞬间和未来的约定，认真收藏在同一个地方。</p>
+            <div class="hero-actions">
+              <a class="primary-button" href="#memories">记录今天</a>
+              <a class="ghost-button" href="#wishes">看看愿望</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="dashboard section-band" aria-label="关系仪表盘">
+          <div class="section-inner dashboard-grid">
+            <article class="metric-card wide">
+              <span class="card-label">在一起</span>
+              <strong id="timeTogether">计算中</strong>
+              <p>从 2025-10-01 开始记录。可以在 `app.js` 里改成你们真正的开始日期。</p>
+            </article>
+            <article class="metric-card">
+              <span class="card-label">今天甜度</span>
+              <strong id="sweetnessScore">92%</strong>
+              <p>由最近好感度自动估算。</p>
+            </article>
+            <article class="metric-card">
+              <span class="card-label">下个纪念日</span>
+              <strong id="nextAnniversary">加载中</strong>
+              <p id="nextAnniversaryMeta">正在计算倒计时。</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section-inner two-column" id="memories">
+          <div>
+            <div class="section-heading">
+              <p class="eyebrow">MEMORY TIMELINE</p>
+              <h2>我们的点点滴滴</h2>
+            </div>
+            <div class="timeline" id="memoryList"></div>
+          </div>
+          <form class="panel compact-form" id="memoryForm">
+            <h3>新增回忆</h3>
+            <label>
+              标题
+              <input name="title" required placeholder="比如：第一次一起看日落" />
+            </label>
+            <label>
+              日期
+              <input name="date" type="date" required />
+            </label>
+            <label>
+              标签
+              <input name="tag" placeholder="约会 / 旅行 / 日常" />
+            </label>
+            <label>
+              内容
+              <textarea name="body" required placeholder="写下这一天值得记住的细节"></textarea>
+            </label>
+            <button type="submit">保存回忆</button>
+          </form>
+        </section>
+
+        <section class="section-band" id="affection">
+          <div class="section-inner">
+            <div class="section-heading">
+              <p class="eyebrow">AFFECTION CURVE</p>
+              <h2>心动曲线</h2>
+            </div>
+            <div class="affection-layout">
+              <form class="panel compact-form" id="affectionForm">
+                <h3>记录一次好感度</h3>
+                <label>
+                  日期
+                  <input name="date" type="date" required />
+                </label>
+                <label>
+                  我对她的好感度
+                  <input name="me" type="range" min="0" max="100" value="94" />
+                  <output id="meOutput">94</output>
+                </label>
+                <label>
+                  她对我的好感度
+                  <input name="her" type="range" min="0" max="100" value="91" />
+                  <output id="herOutput">91</output>
+                </label>
+                <label>
+                  备注
+                  <input name="note" placeholder="今天为什么心动？" />
+                </label>
+                <button type="submit">加入曲线</button>
+              </form>
+              <div class="chart-panel panel">
+                <div class="chart-header">
+                  <h3>最近记录</h3>
+                  <span>分数不是评判，是一起走过的痕迹。</span>
+                </div>
+                <div class="chart" id="affectionChart" aria-label="好感度柱状图"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-inner" id="wishes">
+          <div class="section-heading">
+            <p class="eyebrow">FUTURE LIST</p>
+            <h2>未来想一起做的事</h2>
+          </div>
+          <form class="inline-form" id="wishForm">
+            <input name="title" required placeholder="一起去哪里？想完成什么？" />
+            <select name="status">
+              <option value="想做">想做</option>
+              <option value="计划中">计划中</option>
+              <option value="已完成">已完成</option>
+            </select>
+            <button type="submit">添加愿望</button>
+          </form>
+          <div class="wish-board" id="wishBoard"></div>
+        </section>
+
+        <section class="section-band" id="anniversaries">
+          <div class="section-inner">
+            <div class="section-heading">
+              <p class="eyebrow">SPECIAL DAYS</p>
+              <h2>纪念日</h2>
+            </div>
+            <div class="anniversary-grid" id="anniversaryList"></div>
+          </div>
+        </section>
+
+        <section class="section-inner" id="gallery">
+          <div class="section-heading">
+            <p class="eyebrow">PHOTO WALL</p>
+            <h2>相册精选</h2>
+          </div>
+          <div class="gallery-grid">
+            <figure>
+              <div class="photo-tile tile-one"></div>
+              <figcaption>一起散步的傍晚</figcaption>
+            </figure>
+            <figure>
+              <div class="photo-tile tile-two"></div>
+              <figcaption>周末咖啡和聊天</figcaption>
+            </figure>
+            <figure>
+              <div class="photo-tile tile-three"></div>
+              <figcaption>计划下一次旅行</figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <section class="section-band" id="letters">
+          <div class="section-inner two-column">
+            <div>
+              <div class="section-heading">
+                <p class="eyebrow">SECRET LETTERS</p>
+                <h2>悄悄话</h2>
+              </div>
+              <div class="letter-stack" id="letterList"></div>
+            </div>
+            <form class="panel compact-form" id="letterForm">
+              <h3>写给她</h3>
+              <label>
+                标题
+                <input name="title" required placeholder="比如：今天想告诉你" />
+              </label>
+              <label>
+                打开日期
+                <input name="openDate" type="date" required />
+              </label>
+              <label>
+                内容
+                <textarea name="body" required placeholder="可以是一句想念，也可以是一封很长的信"></textarea>
+              </label>
+              <button type="submit">保存悄悄话</button>
+            </form>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
