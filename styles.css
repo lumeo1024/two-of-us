@@ -274,6 +274,10 @@ button {
   margin-bottom: 24px;
 }
 
+.settings-section {
+  padding-bottom: 24px;
+}
+
 .split-heading {
   display: flex;
   align-items: end;

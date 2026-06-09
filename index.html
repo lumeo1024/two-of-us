@@ -19,6 +19,7 @@
           <a href="#wishes">共同愿望</a>
           <a href="#memories">双人回忆</a>
           <a href="#letters">互相留言</a>
+          <a href="#settings">设置</a>
         </nav>
       </header>
 
@@ -57,6 +58,27 @@
           </div>
         </section>
 
+        <section class="section-inner settings-section" id="settings">
+          <div class="section-heading split-heading">
+            <div>
+              <p class="eyebrow">SETTINGS</p>
+              <h2>基本信息</h2>
+            </div>
+            <p>这里填写两个人在页面里的备注称呼，下面所有记录人、状态卡、负责人和留言称呼都会同步更新。</p>
+          </div>
+          <form class="panel profile-form" id="profileForm">
+            <label>
+              第一个人的备注
+              <input name="meName" required maxlength="12" placeholder="比如：小王 / 宝宝 / Lumeo" />
+            </label>
+            <label>
+              第二个人的备注
+              <input name="herName" required maxlength="12" placeholder="比如：小鹿 / 女朋友 / 小朋友" />
+            </label>
+            <button type="submit">保存设置</button>
+          </form>
+        </section>
+
         <section class="section-inner" id="checkin">
           <div class="section-heading split-heading">
             <div>
@@ -65,18 +87,6 @@
             </div>
             <p>选择自己的身份，记录今天的心情、想被照顾的方式，以及想为对方做的一件小事。</p>
           </div>
-
-          <form class="panel profile-form" id="profileForm">
-            <label>
-              第一个人的昵称
-              <input name="meName" required maxlength="12" placeholder="比如：小王" />
-            </label>
-            <label>
-              第二个人的昵称
-              <input name="herName" required maxlength="12" placeholder="比如：小鹿" />
-            </label>
-            <button type="submit">保存昵称</button>
-          </form>
 
           <div class="person-grid" id="personGrid"></div>
 

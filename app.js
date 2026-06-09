@@ -8,7 +8,7 @@ const basePeople = [
 const seedData = {
   profiles: {
     me: "Lumeo",
-    her: "爱人"
+    her: "小朋友"
   },
   checkins: [
     {
@@ -71,7 +71,7 @@ const seedData = {
       to: "me",
       title: "今天的夸奖",
       openDate: "2026-06-01",
-      body: "谢谢你一直认真回应我的情绪，这件事我有感觉到。"
+      body: "谢谢你一直认真回应情绪，这件事真的会被感觉到。"
     }
   ]
 };
@@ -111,7 +111,7 @@ function personById(id) {
 }
 
 function ownerLabel(owner) {
-  if (owner === "both") return "两个人";
+  if (owner === "both") return "一起";
   return personById(owner).name;
 }
 
@@ -194,7 +194,7 @@ function renderPeople() {
       <div class="person-top">
         <span class="avatar">${person.name.slice(0, 1)}</span>
         <div>
-          <h3>${person.name}的今日状态</h3>
+          <h3>${escapeHtml(person.name)}</h3>
           <p>${latestCheckin ? formatDate(latestCheckin.date) : "还没有记录"}</p>
         </div>
       </div>
@@ -376,7 +376,7 @@ function editWishNote(wish) {
 function populatePersonSelects() {
   const people = getPeople();
   const simpleOptions = people.map((person) => `<option value="${person.id}">${person.name}</option>`).join("");
-  const ownerOptions = `<option value="both">两个人一起</option>${simpleOptions}`;
+  const ownerOptions = `<option value="both">一起负责</option>${simpleOptions}`;
 
   ["#personSelect", "#affectionPersonSelect", "#memoryPersonSelect", "#letterFromSelect", "#letterToSelect"].forEach(
     (selector) => {
