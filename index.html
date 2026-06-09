@@ -66,13 +66,25 @@
             <p>选择自己的身份，记录今天的心情、想被照顾的方式，以及想为对方做的一件小事。</p>
           </div>
 
+          <form class="panel profile-form" id="profileForm">
+            <label>
+              第一个人的昵称
+              <input name="meName" required maxlength="12" placeholder="比如：小王" />
+            </label>
+            <label>
+              第二个人的昵称
+              <input name="herName" required maxlength="12" placeholder="比如：小鹿" />
+            </label>
+            <button type="submit">保存昵称</button>
+          </form>
+
           <div class="person-grid" id="personGrid"></div>
 
           <form class="panel checkin-form" id="checkinForm">
             <h3>写下今天的自己</h3>
             <div class="form-grid">
               <label>
-                我是
+                记录人
                 <select name="person" required id="personSelect"></select>
               </label>
               <label>
@@ -104,14 +116,14 @@
                 <p class="eyebrow">AFFECTION RADAR</p>
                 <h2>好感雷达</h2>
               </div>
-              <p>好感度不再是“我猜她多少分”，而是两个人各自填写：心动、安心、被理解。</p>
+              <p>好感度由两个人各自填写：心动、安心、被理解，页面会保留各自的表达。</p>
             </div>
 
             <div class="affection-layout">
               <form class="panel compact-form" id="affectionForm">
                 <h3>添加一条评分</h3>
                 <label>
-                  我是
+                  记录人
                   <select name="person" required id="affectionPersonSelect"></select>
                 </label>
                 <label>

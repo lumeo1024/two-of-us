@@ -293,6 +293,14 @@ button {
   margin-bottom: 22px;
 }
 
+.profile-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 22px;
+}
+
 .person-card {
   padding: 24px;
   border-top: 5px solid var(--person-color);
@@ -332,6 +340,10 @@ button {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 18px;
+}
+
+.editable-note {
+  min-height: 52px;
 }
 
 .energy-row span,
@@ -519,6 +531,24 @@ output {
   background: var(--green);
 }
 
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.small-button {
+  min-height: 34px;
+  padding: 0 11px;
+  font-size: 13px;
+}
+
+.small-button.secondary {
+  color: var(--rose-dark);
+  background: #fae4e8;
+}
+
 .two-column,
 .letter-layout {
   display: grid;
@@ -593,6 +623,7 @@ output {
 
   .dashboard-grid,
   .person-grid,
+  .profile-form,
   .form-grid,
   .wish-form,
   .affection-layout,

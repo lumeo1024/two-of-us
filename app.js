@@ -1,11 +1,15 @@
 const COUPLE_START_DATE = "2025-10-01T20:00:00+08:00";
 
-const people = [
-  { id: "me", name: "我", color: "#bd4f61", soft: "#fde7eb" },
-  { id: "her", name: "她", color: "#4f8a7b", soft: "#e0f1ec" }
+const basePeople = [
+  { id: "me", color: "#bd4f61", soft: "#fde7eb" },
+  { id: "her", color: "#4f8a7b", soft: "#e0f1ec" }
 ];
 
 const seedData = {
+  profiles: {
+    me: "Lumeo",
+    her: "爱人"
+  },
   checkins: [
     {
       person: "me",
@@ -46,13 +50,13 @@ const seedData = {
   ],
   wishes: [
     { title: "一起去海边看日出", owner: "both", status: "想做", nextStep: "先选一个周末" },
-    { title: "拍一组正式合照", owner: "her", status: "计划中", nextStep: "她来挑风格，我来预约" },
+    { title: "拍一组正式合照", owner: "her", status: "计划中", nextStep: "先一起挑拍摄风格" },
     { title: "做一次双人晚餐", owner: "me", status: "已完成", nextStep: "下次换一道新菜" }
   ],
   anniversaries: [
     { title: "在一起纪念日", date: "2025-10-01" },
     { title: "第一次旅行", date: "2026-04-05" },
-    { title: "她的生日", date: "2026-09-18" }
+    { title: "爱人的生日", date: "2026-09-18" }
   ],
   letters: [
     {
@@ -94,7 +98,15 @@ function saveState() {
   localStorage.setItem(storageKey, JSON.stringify(state));
 }
 
+function getPeople() {
+  return basePeople.map((person) => ({
+    ...person,
+    name: state.profiles?.[person.id] || seedData.profiles[person.id]
+  }));
+}
+
 function personById(id) {
+  const people = getPeople();
   return people.find((person) => person.id === id) || people[0];
 }
 
@@ -135,6 +147,7 @@ function renderTimeTogether() {
 }
 
 function renderParticipation() {
+  const people = getPeople();
   const since = new Date();
   since.setDate(since.getDate() - 7);
   const recent = state.checkins.filter((item) => new Date(`${item.date}T00:00:00`) >= since);
@@ -158,6 +171,7 @@ function renderNextAnniversary() {
 }
 
 function renderPeople() {
+  const people = getPeople();
   const grid = document.querySelector("#personGrid");
   grid.innerHTML = "";
 
@@ -185,17 +199,27 @@ function renderPeople() {
         </div>
       </div>
       <strong>${latestCheckin ? escapeHtml(latestCheckin.mood) : "等待出现"}</strong>
-      <p>${latestCheckin ? escapeHtml(latestCheckin.note) : "今天还没有留下想说的话。"}</p>
+      <p class="editable-note">${latestCheckin ? escapeHtml(latestCheckin.note) : "今天还没有留下想说的话。"}</p>
       <div class="energy-row">
         <span>能量 ${latestCheckin ? latestCheckin.energy : 0}%</span>
         <span>好感 ${average}%</span>
       </div>
+      ${
+        latestCheckin
+          ? '<button class="small-button note-edit" type="button">修改备注</button>'
+          : ""
+      }
     `;
+    const editButton = card.querySelector(".note-edit");
+    if (editButton) {
+      editButton.addEventListener("click", () => editCheckinNote(latestCheckin));
+    }
     grid.appendChild(card);
   });
 }
 
 function renderAffection() {
+  const people = getPeople();
   const radar = document.querySelector("#affectionRadar");
   const legend = document.querySelector("#affectionLegend");
   radar.innerHTML = "";
@@ -263,11 +287,16 @@ function renderWishes() {
       card.innerHTML = `
         <div>
           <strong>${escapeHtml(wish.title)}</strong>
-          <p>负责人：${ownerLabel(wish.owner)} · 下一步：${escapeHtml(wish.nextStep || "待补充")}</p>
+          <p>负责人：${ownerLabel(wish.owner)} · 备注：${escapeHtml(wish.nextStep || "待补充")}</p>
         </div>
-        <button type="button" aria-label="推进愿望状态">推进</button>
+        <div class="card-actions">
+          <button class="small-button secondary" type="button" aria-label="修改愿望备注">备注</button>
+          <button class="small-button" type="button" aria-label="推进愿望状态">推进</button>
+        </div>
       `;
-      card.querySelector("button").addEventListener("click", () => advanceWish(wish));
+      const buttons = card.querySelectorAll("button");
+      buttons[0].addEventListener("click", () => editWishNote(wish));
+      buttons[1].addEventListener("click", () => advanceWish(wish));
       column.appendChild(card);
     });
 
@@ -328,7 +357,24 @@ function advanceWish(wish) {
   renderWishes();
 }
 
+function editCheckinNote(checkin) {
+  const nextNote = window.prompt("修改这条今日同步备注", checkin.note || "");
+  if (nextNote === null) return;
+  checkin.note = nextNote.trim() || "还没有留下备注。";
+  saveState();
+  renderPeople();
+}
+
+function editWishNote(wish) {
+  const nextNote = window.prompt("修改这个愿望的备注", wish.nextStep || "");
+  if (nextNote === null) return;
+  wish.nextStep = nextNote.trim() || "待补充";
+  saveState();
+  renderWishes();
+}
+
 function populatePersonSelects() {
+  const people = getPeople();
   const simpleOptions = people.map((person) => `<option value="${person.id}">${person.name}</option>`).join("");
   const ownerOptions = `<option value="both">两个人一起</option>${simpleOptions}`;
 
@@ -341,6 +387,12 @@ function populatePersonSelects() {
   document.querySelector("#letterToSelect").value = people[1]?.id || people[0].id;
 }
 
+function syncProfileForm() {
+  const profileForm = document.querySelector("#profileForm");
+  profileForm.elements.meName.value = state.profiles?.me || seedData.profiles.me;
+  profileForm.elements.herName.value = state.profiles?.her || seedData.profiles.her;
+}
+
 function bindForms() {
   const today = new Date().toISOString().slice(0, 10);
   document.querySelectorAll('input[type="date"]').forEach((input) => {
@@ -350,6 +402,18 @@ function bindForms() {
   const energyRange = document.querySelector('#checkinForm input[name="energy"]');
   energyRange.addEventListener("input", () => {
     document.querySelector("#energyOutput").textContent = energyRange.value;
+  });
+
+  document.querySelector("#profileForm").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const data = Object.fromEntries(new FormData(event.currentTarget));
+    state.profiles = {
+      me: data.meName.trim() || seedData.profiles.me,
+      her: data.herName.trim() || seedData.profiles.her
+    };
+    saveState();
+    populatePersonSelects();
+    renderAll();
   });
 
   document.querySelector("#checkinForm").addEventListener("submit", (event) => {
@@ -442,6 +506,7 @@ function renderAll() {
   renderLetters();
 }
 
+syncProfileForm();
 populatePersonSelects();
 bindForms();
 renderAll();
