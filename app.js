@@ -16,6 +16,7 @@ const seedData = {
       date: "2026-06-07",
       mood: "想见面",
       energy: 84,
+      updatedAt: "2026-06-07T20:00:00+08:00",
       note: "今天最开心的是想到周末可以一起吃饭。"
     },
     {
@@ -23,6 +24,7 @@ const seedData = {
       date: "2026-06-07",
       mood: "被惦记",
       energy: 88,
+      updatedAt: "2026-06-07T20:05:00+08:00",
       note: "希望下次见面可以慢慢散步，不赶时间。"
     }
   ],
@@ -115,6 +117,12 @@ function ownerLabel(owner) {
   return personById(owner).name;
 }
 
+function latestFirst(a, b) {
+  const dateCompare = b.date.localeCompare(a.date);
+  if (dateCompare !== 0) return dateCompare;
+  return (b.updatedAt || "").localeCompare(a.updatedAt || "");
+}
+
 function formatDate(dateString) {
   return new Intl.DateTimeFormat("zh-CN", {
     year: "numeric",
@@ -178,7 +186,7 @@ function renderPeople() {
   people.forEach((person) => {
     const latestCheckin = [...state.checkins]
       .filter((item) => item.person === person.id)
-      .sort((a, b) => b.date.localeCompare(a.date))[0];
+      .sort(latestFirst)[0];
     const latestAffection = [...state.affection]
       .filter((item) => item.person === person.id)
       .sort((a, b) => b.date.localeCompare(a.date))[0];
@@ -204,16 +212,7 @@ function renderPeople() {
         <span>能量 ${latestCheckin ? latestCheckin.energy : 0}%</span>
         <span>好感 ${average}%</span>
       </div>
-      ${
-        latestCheckin
-          ? '<button class="small-button note-edit" type="button">修改备注</button>'
-          : ""
-      }
     `;
-    const editButton = card.querySelector(".note-edit");
-    if (editButton) {
-      editButton.addEventListener("click", () => editCheckinNote(latestCheckin));
-    }
     grid.appendChild(card);
   });
 }
@@ -289,14 +288,9 @@ function renderWishes() {
           <strong>${escapeHtml(wish.title)}</strong>
           <p>负责人：${ownerLabel(wish.owner)} · 备注：${escapeHtml(wish.nextStep || "待补充")}</p>
         </div>
-        <div class="card-actions">
-          <button class="small-button secondary" type="button" aria-label="修改愿望备注">备注</button>
-          <button class="small-button" type="button" aria-label="推进愿望状态">推进</button>
-        </div>
+        <button class="small-button" type="button" aria-label="推进愿望状态">推进</button>
       `;
-      const buttons = card.querySelectorAll("button");
-      buttons[0].addEventListener("click", () => editWishNote(wish));
-      buttons[1].addEventListener("click", () => advanceWish(wish));
+      card.querySelector("button").addEventListener("click", () => advanceWish(wish));
       column.appendChild(card);
     });
 
@@ -357,22 +351,6 @@ function advanceWish(wish) {
   renderWishes();
 }
 
-function editCheckinNote(checkin) {
-  const nextNote = window.prompt("修改这条今日同步备注", checkin.note || "");
-  if (nextNote === null) return;
-  checkin.note = nextNote.trim() || "还没有留下备注。";
-  saveState();
-  renderPeople();
-}
-
-function editWishNote(wish) {
-  const nextNote = window.prompt("修改这个愿望的备注", wish.nextStep || "");
-  if (nextNote === null) return;
-  wish.nextStep = nextNote.trim() || "待补充";
-  saveState();
-  renderWishes();
-}
-
 function populatePersonSelects() {
   const people = getPeople();
   const simpleOptions = people.map((person) => `<option value="${person.id}">${person.name}</option>`).join("");
@@ -419,7 +397,13 @@ function bindForms() {
   document.querySelector("#checkinForm").addEventListener("submit", (event) => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget));
-    state.checkins.push({ ...data, energy: Number(data.energy) });
+    const nextCheckin = { ...data, energy: Number(data.energy), updatedAt: new Date().toISOString() };
+    const existingIndex = state.checkins.findIndex((item) => item.person === data.person && item.date === data.date);
+    if (existingIndex >= 0) {
+      state.checkins[existingIndex] = nextCheckin;
+    } else {
+      state.checkins.push(nextCheckin);
+    }
     saveState();
     event.currentTarget.reset();
     setDefaultDates();

@@ -535,22 +535,10 @@ output {
   background: var(--green);
 }
 
-.card-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
 .small-button {
   min-height: 34px;
   padding: 0 11px;
   font-size: 13px;
-}
-
-.small-button.secondary {
-  color: var(--rose-dark);
-  background: #fae4e8;
 }
 
 .two-column,
