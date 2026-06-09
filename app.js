@@ -28,12 +28,6 @@ const seedData = {
       note: "希望下次见面可以慢慢散步，不赶时间。"
     }
   ],
-  affection: [
-    { person: "me", date: "2026-06-01", spark: 92, comfort: 90, understood: 86 },
-    { person: "her", date: "2026-06-01", spark: 90, comfort: 92, understood: 88 },
-    { person: "me", date: "2026-06-07", spark: 95, comfort: 91, understood: 90 },
-    { person: "her", date: "2026-06-07", spark: 93, comfort: 94, understood: 91 }
-  ],
   memories: [
     {
       person: "me",
@@ -74,6 +68,15 @@ const seedData = {
       title: "今天的夸奖",
       openDate: "2026-06-01",
       body: "谢谢你一直认真回应情绪，这件事真的会被感觉到。"
+    }
+  ],
+  photos: [
+    {
+      id: "seed-photo-1",
+      title: "第一张照片",
+      caption: "可以从这里开始慢慢补上你们真正的照片。",
+      src: "./assets/hero-memory-journal.png",
+      createdAt: "2026-06-09T00:00:00+08:00"
     }
   ]
 };
@@ -187,12 +190,6 @@ function renderPeople() {
     const latestCheckin = [...state.checkins]
       .filter((item) => item.person === person.id)
       .sort(latestFirst)[0];
-    const latestAffection = [...state.affection]
-      .filter((item) => item.person === person.id)
-      .sort((a, b) => b.date.localeCompare(a.date))[0];
-    const average = latestAffection
-      ? Math.round((latestAffection.spark + latestAffection.comfort + latestAffection.understood) / 3)
-      : 0;
 
     const card = document.createElement("article");
     card.className = "person-card";
@@ -210,63 +207,10 @@ function renderPeople() {
       <p class="editable-note">${latestCheckin ? escapeHtml(latestCheckin.note) : "今天还没有留下想说的话。"}</p>
       <div class="energy-row">
         <span>能量 ${latestCheckin ? latestCheckin.energy : 0}%</span>
-        <span>好感 ${average}%</span>
       </div>
     `;
     grid.appendChild(card);
   });
-}
-
-function renderAffection() {
-  const people = getPeople();
-  const radar = document.querySelector("#affectionRadar");
-  const legend = document.querySelector("#affectionLegend");
-  radar.innerHTML = "";
-  legend.innerHTML = "";
-
-  const metrics = [
-    ["spark", "心动"],
-    ["comfort", "安心"],
-    ["understood", "被理解"]
-  ];
-
-  people.forEach((person) => {
-    const latest = [...state.affection]
-      .filter((item) => item.person === person.id)
-      .sort((a, b) => b.date.localeCompare(a.date))[0];
-
-    metrics.forEach(([key, label]) => {
-      const value = latest ? latest[key] : 0;
-      const item = document.createElement("div");
-      item.className = "radar-item";
-      item.innerHTML = `
-        <div class="radar-label">
-          <span>${person.name} · ${label}</span>
-          <strong>${value}</strong>
-        </div>
-        <div class="meter"><span style="width:${value}%; background:${person.color}"></span></div>
-      `;
-      radar.appendChild(item);
-    });
-
-    const badge = document.createElement("span");
-    badge.innerHTML = `<i style="background:${person.color}"></i>${person.name}`;
-    legend.appendChild(badge);
-  });
-
-  const latestScores = people
-    .map((person) =>
-      [...state.affection].filter((item) => item.person === person.id).sort((a, b) => b.date.localeCompare(a.date))[0]
-    )
-    .filter(Boolean);
-  const average =
-    latestScores.length === 0
-      ? 0
-      : Math.round(
-          latestScores.reduce((sum, item) => sum + item.spark + item.comfort + item.understood, 0) /
-            (latestScores.length * 3)
-        );
-  document.querySelector("#affectionSummary").textContent = `当前共同温度 ${average}%`;
 }
 
 function renderWishes() {
@@ -343,6 +287,28 @@ function renderLetters() {
   });
 }
 
+function renderPhotos() {
+  const wall = document.querySelector("#photoWall");
+  wall.innerHTML = "";
+
+  [...state.photos]
+    .sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""))
+    .forEach((photo) => {
+      const card = document.createElement("figure");
+      card.className = "photo-card";
+      card.innerHTML = `
+        <img src="${escapeHtml(photo.src)}" alt="${escapeHtml(photo.title || "照片墙照片")}" />
+        <figcaption>
+          <strong>${escapeHtml(photo.title || "未命名照片")}</strong>
+          <span>${escapeHtml(photo.caption || "没有备注")}</span>
+        </figcaption>
+        <button class="small-button photo-delete" type="button" aria-label="删除照片">删除</button>
+      `;
+      card.querySelector("button").addEventListener("click", () => deletePhoto(photo.id));
+      wall.appendChild(card);
+    });
+}
+
 function advanceWish(wish) {
   const order = ["想做", "计划中", "已完成"];
   const currentIndex = order.indexOf(wish.status);
@@ -351,10 +317,16 @@ function advanceWish(wish) {
   renderWishes();
 }
 
+function deletePhoto(id) {
+  state.photos = state.photos.filter((photo) => photo.id !== id);
+  saveState();
+  renderPhotos();
+}
+
 function populatePersonSelects() {
   const people = getPeople();
   const previousValues = new Map(
-    ["#personSelect", "#affectionPersonSelect", "#memoryPersonSelect", "#letterFromSelect", "#letterToSelect", "#wishOwnerSelect"]
+    ["#personSelect", "#memoryPersonSelect", "#letterFromSelect", "#letterToSelect", "#wishOwnerSelect"]
       .map((selector) => {
         const element = document.querySelector(selector);
         return [selector, element?.value];
@@ -363,7 +335,7 @@ function populatePersonSelects() {
   const simpleOptions = people.map((person) => `<option value="${person.id}">${person.name}</option>`).join("");
   const ownerOptions = `<option value="both">一起负责</option>${simpleOptions}`;
 
-  ["#personSelect", "#affectionPersonSelect", "#memoryPersonSelect", "#letterFromSelect", "#letterToSelect"].forEach(
+  ["#personSelect", "#memoryPersonSelect", "#letterFromSelect", "#letterToSelect"].forEach(
     (selector) => {
       const select = document.querySelector(selector);
       select.innerHTML = simpleOptions;
@@ -424,28 +396,6 @@ function bindForms() {
     renderAll();
   });
 
-  const affectionForm = document.querySelector("#affectionForm");
-  ["spark", "comfort", "understood"].forEach((name) => {
-    const range = affectionForm.elements[name];
-    range.addEventListener("input", () => {
-      document.querySelector(`#${name}Output`).textContent = range.value;
-    });
-  });
-
-  affectionForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const data = Object.fromEntries(new FormData(event.currentTarget));
-    state.affection.push({
-      ...data,
-      spark: Number(data.spark),
-      comfort: Number(data.comfort),
-      understood: Number(data.understood)
-    });
-    saveState();
-    renderAffection();
-    renderPeople();
-  });
-
   document.querySelector("#wishForm").addEventListener("submit", (event) => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget));
@@ -474,6 +424,26 @@ function bindForms() {
     setDefaultDates();
     renderLetters();
   });
+
+  document.querySelector("#photoForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = Object.fromEntries(new FormData(form));
+    const file = form.elements.photo.files[0];
+    if (!file) return;
+
+    const src = await fileToCompressedDataUrl(file);
+    state.photos.push({
+      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+      title: data.title.trim() || "未命名照片",
+      caption: data.caption.trim(),
+      src,
+      createdAt: new Date().toISOString()
+    });
+    saveState();
+    form.reset();
+    renderPhotos();
+  });
 }
 
 function setDefaultDates() {
@@ -492,15 +462,38 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function fileToCompressedDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("照片读取失败"));
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = () => reject(new Error("照片加载失败"));
+      image.onload = () => {
+        const maxSize = 1400;
+        const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(image.width * scale);
+        canvas.height = Math.round(image.height * scale);
+        const context = canvas.getContext("2d");
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      };
+      image.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function renderAll() {
   renderTimeTogether();
   renderParticipation();
   renderNextAnniversary();
   renderPeople();
-  renderAffection();
   renderWishes();
   renderMemories();
   renderLetters();
+  renderPhotos();
 }
 
 syncProfileForm();

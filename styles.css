@@ -423,77 +423,6 @@ output {
   font-size: 20px;
 }
 
-.affection-layout {
-  display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 24px;
-}
-
-.chart-header {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 22px;
-}
-
-.chart-header span {
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.radar-grid {
-  display: grid;
-  gap: 14px;
-}
-
-.radar-label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
-  color: var(--muted);
-}
-
-.radar-label strong {
-  color: var(--ink);
-}
-
-.meter {
-  height: 14px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: #efe5dc;
-}
-
-.meter span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-}
-
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.legend span {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--muted);
-  background: #f5eee7;
-}
-
-.legend i {
-  display: inline-block;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-}
-
 .wish-board {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -594,6 +523,56 @@ output {
   filter: saturate(0.75);
 }
 
+.photo-form {
+  display: grid;
+  grid-template-columns: 220px 1fr 1.4fr auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 22px;
+}
+
+.photo-wall {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.photo-card {
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+.photo-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: #efe5dc;
+}
+
+.photo-card figcaption {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+}
+
+.photo-card figcaption span {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.photo-delete {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(135, 54, 70, 0.88);
+}
+
 @media (max-width: 980px) {
   .topbar {
     align-items: flex-start;
@@ -616,9 +595,10 @@ output {
   .dashboard-grid,
   .person-grid,
   .profile-form,
+  .photo-form,
   .form-grid,
   .wish-form,
-  .affection-layout,
+  .photo-wall,
   .wish-board,
   .two-column,
   .letter-layout {
@@ -650,6 +630,10 @@ output {
   }
 
   .wish-card {
+    grid-template-columns: 1fr;
+  }
+
+  .photo-wall {
     grid-template-columns: 1fr;
   }
 }

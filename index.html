@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Two of Us</title>
-    <link rel="stylesheet" href="./styles.css?v=20260609-2" />
+    <link rel="stylesheet" href="./styles.css?v=20260609-3" />
   </head>
   <body>
     <div class="app-shell">
@@ -15,10 +15,10 @@
         </a>
         <nav class="nav" aria-label="主要导航">
           <a href="#checkin">今日同步</a>
-          <a href="#affection">好感雷达</a>
           <a href="#wishes">共同愿望</a>
           <a href="#memories">双人回忆</a>
           <a href="#letters">互相留言</a>
+          <a href="#photos">照片墙</a>
           <a href="#settings">设置</a>
         </nav>
       </header>
@@ -119,57 +119,6 @@
           </form>
         </section>
 
-        <section class="section-band" id="affection">
-          <div class="section-inner">
-            <div class="section-heading split-heading">
-              <div>
-                <p class="eyebrow">AFFECTION RADAR</p>
-                <h2>好感雷达</h2>
-              </div>
-              <p>好感度由两个人各自填写：心动、安心、被理解，页面会保留各自的表达。</p>
-            </div>
-
-            <div class="affection-layout">
-              <form class="panel compact-form" id="affectionForm">
-                <h3>添加一条评分</h3>
-                <label>
-                  记录人
-                  <select name="person" required id="affectionPersonSelect"></select>
-                </label>
-                <label>
-                  日期
-                  <input name="date" type="date" required />
-                </label>
-                <label>
-                  心动
-                  <input name="spark" type="range" min="0" max="100" value="92" />
-                  <output id="sparkOutput">92</output>
-                </label>
-                <label>
-                  安心
-                  <input name="comfort" type="range" min="0" max="100" value="88" />
-                  <output id="comfortOutput">88</output>
-                </label>
-                <label>
-                  被理解
-                  <input name="understood" type="range" min="0" max="100" value="86" />
-                  <output id="understoodOutput">86</output>
-                </label>
-                <button type="submit">加入雷达</button>
-              </form>
-
-              <div class="panel chart-panel">
-                <div class="chart-header">
-                  <h3>最近共同温度</h3>
-                  <span id="affectionSummary">等待记录</span>
-                </div>
-                <div class="radar-grid" id="affectionRadar"></div>
-                <div class="legend" id="affectionLegend"></div>
-              </div>
-            </div>
-          </div>
-        </section>
-
         <section class="section-inner" id="wishes">
           <div class="section-heading split-heading">
             <div>
@@ -264,9 +213,37 @@
             </form>
           </div>
         </section>
+
+        <section class="section-band" id="photos">
+          <div class="section-inner">
+            <div class="section-heading split-heading">
+              <div>
+                <p class="eyebrow">PHOTO WALL</p>
+                <h2>照片墙</h2>
+              </div>
+              <p>上传你们想留下的照片，图片会保存在当前浏览器里。换设备或清理浏览器数据后需要重新上传。</p>
+            </div>
+            <form class="panel photo-form" id="photoForm">
+              <label>
+                上传照片
+                <input name="photo" type="file" accept="image/*" required />
+              </label>
+              <label>
+                照片标题
+                <input name="title" maxlength="24" placeholder="比如：周末散步" />
+              </label>
+              <label>
+                备注
+                <input name="caption" maxlength="80" placeholder="这一刻为什么值得留下" />
+              </label>
+              <button type="submit">添加到照片墙</button>
+            </form>
+            <div class="photo-wall" id="photoWall"></div>
+          </div>
+        </section>
       </main>
     </div>
 
-    <script src="./app.js?v=20260609-2"></script>
+    <script src="./app.js?v=20260609-3"></script>
   </body>
 </html>
