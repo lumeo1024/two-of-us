@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Two of Us</title>
-    <link rel="stylesheet" href="./styles.css?v=20260609-3" />
+    <link rel="stylesheet" href="./styles.css?v=20260609-4" />
   </head>
   <body>
     <div class="app-shell">
@@ -43,7 +43,7 @@
             <article class="metric-card wide">
               <span class="card-label">在一起</span>
               <strong id="timeTogether">计算中</strong>
-              <p>从 2025-10-01 开始记录。可以在 <code>app.js</code> 里改成你们真正的开始日期。</p>
+              <p>从 2026-06-08 14:59 开始记录。</p>
             </article>
             <article class="metric-card">
               <span class="card-label">本周参与</span>
@@ -69,11 +69,11 @@
           <form class="panel profile-form" id="profileForm">
             <label>
               第一个人的备注
-              <input name="meName" required maxlength="12" placeholder="比如：小王 / 宝宝 / Lumeo" />
+              <input name="meName" required maxlength="12" placeholder="比如：第一个人 / 你的备注" />
             </label>
             <label>
               第二个人的备注
-              <input name="herName" required maxlength="12" placeholder="比如：小鹿 / 女朋友 / 小朋友" />
+              <input name="herName" required maxlength="12" placeholder="比如：第二个人 / 对方备注" />
             </label>
             <button type="submit">保存设置</button>
           </form>
@@ -128,7 +128,7 @@
             <p>每个愿望都可以指定发起人、负责人和下一步，让“以后一起”变成“这周谁来推进”。</p>
           </div>
           <form class="panel wish-form" id="wishForm">
-            <input name="title" required placeholder="比如：一起去海边看日出" />
+            <input name="title" required placeholder="写下一个想一起完成的愿望" />
             <select name="owner" id="wishOwnerSelect" required></select>
             <select name="status" required>
               <option value="想做">想做</option>
@@ -244,6 +244,6 @@
       </main>
     </div>
 
-    <script src="./app.js?v=20260609-3"></script>
+    <script src="./app.js?v=20260609-4"></script>
   </body>
 </html>

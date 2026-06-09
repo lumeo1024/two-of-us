@@ -1,4 +1,4 @@
-const COUPLE_START_DATE = "2025-10-01T20:00:00+08:00";
+const COUPLE_START_DATE = "2026-06-08T14:59:00+08:00";
 
 const basePeople = [
   { id: "me", color: "#bd4f61", soft: "#fde7eb" },
@@ -7,81 +7,20 @@ const basePeople = [
 
 const seedData = {
   profiles: {
-    me: "Lumeo",
-    her: "小朋友"
+    me: "第一个人",
+    her: "第二个人"
   },
-  checkins: [
-    {
-      person: "me",
-      date: "2026-06-07",
-      mood: "想见面",
-      energy: 84,
-      updatedAt: "2026-06-07T20:00:00+08:00",
-      note: "今天最开心的是想到周末可以一起吃饭。"
-    },
-    {
-      person: "her",
-      date: "2026-06-07",
-      mood: "被惦记",
-      energy: 88,
-      updatedAt: "2026-06-07T20:05:00+08:00",
-      note: "希望下次见面可以慢慢散步，不赶时间。"
-    }
-  ],
-  memories: [
-    {
-      person: "me",
-      title: "第一次认真计划未来",
-      date: "2026-02-14",
-      tag: "纪念",
-      body: "把想去的城市、想吃的店、想看的电影都写了下来，突然觉得以后变得很具体。"
-    },
-    {
-      person: "her",
-      title: "雨后的散步",
-      date: "2026-01-20",
-      tag: "日常",
-      body: "没有特别安排，只是走了很久。路灯、风和一句没说完的话，都很值得记住。"
-    }
-  ],
-  wishes: [
-    { title: "一起去海边看日出", owner: "both", status: "想做", nextStep: "先选一个周末" },
-    { title: "拍一组正式合照", owner: "her", status: "计划中", nextStep: "先一起挑拍摄风格" },
-    { title: "做一次双人晚餐", owner: "me", status: "已完成", nextStep: "下次换一道新菜" }
-  ],
+  checkins: [],
+  memories: [],
+  wishes: [],
   anniversaries: [
-    { title: "在一起纪念日", date: "2025-10-01" },
-    { title: "第一次旅行", date: "2026-04-05" },
-    { title: "爱人的生日", date: "2026-09-18" }
+    { title: "在一起纪念日", date: "2026-06-08" }
   ],
-  letters: [
-    {
-      from: "me",
-      to: "her",
-      title: "给未来的我们",
-      openDate: "2026-10-01",
-      body: "希望那天打开的时候，我们还能因为这些小事笑出来。"
-    },
-    {
-      from: "her",
-      to: "me",
-      title: "今天的夸奖",
-      openDate: "2026-06-01",
-      body: "谢谢你一直认真回应情绪，这件事真的会被感觉到。"
-    }
-  ],
-  photos: [
-    {
-      id: "seed-photo-1",
-      title: "第一张照片",
-      caption: "可以从这里开始慢慢补上你们真正的照片。",
-      src: "./assets/hero-memory-journal.png",
-      createdAt: "2026-06-09T00:00:00+08:00"
-    }
-  ]
+  letters: [],
+  photos: []
 };
 
-const storageKey = "two-of-us-data-v2";
+const storageKey = "two-of-us-data-v3";
 const state = loadState();
 
 function loadState() {
