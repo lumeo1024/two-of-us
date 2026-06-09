@@ -14,26 +14,25 @@
           <span>Two of Us</span>
         </a>
         <nav class="nav" aria-label="主要导航">
-          <a href="#memories">回忆</a>
-          <a href="#affection">好感度</a>
-          <a href="#wishes">愿望</a>
-          <a href="#anniversaries">纪念日</a>
-          <a href="#gallery">相册</a>
-          <a href="#letters">悄悄话</a>
+          <a href="#checkin">今日同步</a>
+          <a href="#affection">好感雷达</a>
+          <a href="#wishes">共同愿望</a>
+          <a href="#memories">双人回忆</a>
+          <a href="#letters">互相留言</a>
         </nav>
       </header>
 
       <main>
         <section class="hero" id="home">
-          <img class="hero-image" src="./assets/hero-memory-journal.png" alt="一本打开的回忆手账、照片和日历" />
+          <img class="hero-image" src="./assets/hero-memory-journal.png" alt="打开的回忆手账、照片和日历" />
           <div class="hero-overlay"></div>
           <div class="hero-content">
-            <p class="eyebrow">PRIVATE MEMORY SPACE</p>
+            <p class="eyebrow">A SPACE BUILT BY BOTH OF YOU</p>
             <h1>Two of Us</h1>
-            <p class="hero-copy">把一起经历的小事、心动的瞬间和未来的约定，认真收藏在同一个地方。</p>
+            <p class="hero-copy">不是一个人的恋爱日记，而是两个人一起经营的小宇宙。每天各写一点、各推进一点，让关系有回应、有分工、有期待。</p>
             <div class="hero-actions">
-              <a class="primary-button" href="#memories">记录今天</a>
-              <a class="ghost-button" href="#wishes">看看愿望</a>
+              <a class="primary-button" href="#checkin">开始今日同步</a>
+              <a class="ghost-button" href="#wishes">看看谁在行动</a>
             </div>
           </div>
         </section>
@@ -43,153 +42,193 @@
             <article class="metric-card wide">
               <span class="card-label">在一起</span>
               <strong id="timeTogether">计算中</strong>
-              <p>从 2025-10-01 开始记录。可以在 `app.js` 里改成你们真正的开始日期。</p>
+              <p>从 2025-10-01 开始记录。可以在 <code>app.js</code> 里改成你们真正的开始日期。</p>
             </article>
             <article class="metric-card">
-              <span class="card-label">今天甜度</span>
-              <strong id="sweetnessScore">92%</strong>
-              <p>由最近好感度自动估算。</p>
+              <span class="card-label">本周参与</span>
+              <strong id="participationScore">0 / 0</strong>
+              <p id="participationMeta">统计两个人最近 7 天的记录。</p>
             </article>
             <article class="metric-card">
-              <span class="card-label">下个纪念日</span>
+              <span class="card-label">下个特别日</span>
               <strong id="nextAnniversary">加载中</strong>
               <p id="nextAnniversaryMeta">正在计算倒计时。</p>
             </article>
           </div>
         </section>
 
-        <section class="section-inner two-column" id="memories">
-          <div>
-            <div class="section-heading">
-              <p class="eyebrow">MEMORY TIMELINE</p>
-              <h2>我们的点点滴滴</h2>
+        <section class="section-inner" id="checkin">
+          <div class="section-heading split-heading">
+            <div>
+              <p class="eyebrow">DAILY SYNC</p>
+              <h2>两个人都要出现的今日同步</h2>
             </div>
-            <div class="timeline" id="memoryList"></div>
+            <p>选择自己的身份，记录今天的心情、想被照顾的方式，以及想为对方做的一件小事。</p>
           </div>
-          <form class="panel compact-form" id="memoryForm">
-            <h3>新增回忆</h3>
+
+          <div class="person-grid" id="personGrid"></div>
+
+          <form class="panel checkin-form" id="checkinForm">
+            <h3>写下今天的自己</h3>
+            <div class="form-grid">
+              <label>
+                我是
+                <select name="person" required id="personSelect"></select>
+              </label>
+              <label>
+                日期
+                <input name="date" type="date" required />
+              </label>
+              <label>
+                今天心情
+                <input name="mood" required placeholder="开心 / 有点累 / 想被抱抱" />
+              </label>
+              <label>
+                今日能量
+                <input name="energy" type="range" min="0" max="100" value="80" />
+                <output id="energyOutput">80</output>
+              </label>
+            </div>
             <label>
-              标题
-              <input name="title" required placeholder="比如：第一次一起看日落" />
+              今天想告诉对方
+              <textarea name="note" required placeholder="一句话也可以，重点是让对方知道你在。"></textarea>
             </label>
-            <label>
-              日期
-              <input name="date" type="date" required />
-            </label>
-            <label>
-              标签
-              <input name="tag" placeholder="约会 / 旅行 / 日常" />
-            </label>
-            <label>
-              内容
-              <textarea name="body" required placeholder="写下这一天值得记住的细节"></textarea>
-            </label>
-            <button type="submit">保存回忆</button>
+            <button type="submit">保存今日同步</button>
           </form>
         </section>
 
         <section class="section-band" id="affection">
           <div class="section-inner">
-            <div class="section-heading">
-              <p class="eyebrow">AFFECTION CURVE</p>
-              <h2>心动曲线</h2>
+            <div class="section-heading split-heading">
+              <div>
+                <p class="eyebrow">AFFECTION RADAR</p>
+                <h2>好感雷达</h2>
+              </div>
+              <p>好感度不再是“我猜她多少分”，而是两个人各自填写：心动、安心、被理解。</p>
             </div>
+
             <div class="affection-layout">
               <form class="panel compact-form" id="affectionForm">
-                <h3>记录一次好感度</h3>
+                <h3>添加一条评分</h3>
+                <label>
+                  我是
+                  <select name="person" required id="affectionPersonSelect"></select>
+                </label>
                 <label>
                   日期
                   <input name="date" type="date" required />
                 </label>
                 <label>
-                  我对她的好感度
-                  <input name="me" type="range" min="0" max="100" value="94" />
-                  <output id="meOutput">94</output>
+                  心动
+                  <input name="spark" type="range" min="0" max="100" value="92" />
+                  <output id="sparkOutput">92</output>
                 </label>
                 <label>
-                  她对我的好感度
-                  <input name="her" type="range" min="0" max="100" value="91" />
-                  <output id="herOutput">91</output>
+                  安心
+                  <input name="comfort" type="range" min="0" max="100" value="88" />
+                  <output id="comfortOutput">88</output>
                 </label>
                 <label>
-                  备注
-                  <input name="note" placeholder="今天为什么心动？" />
+                  被理解
+                  <input name="understood" type="range" min="0" max="100" value="86" />
+                  <output id="understoodOutput">86</output>
                 </label>
-                <button type="submit">加入曲线</button>
+                <button type="submit">加入雷达</button>
               </form>
-              <div class="chart-panel panel">
+
+              <div class="panel chart-panel">
                 <div class="chart-header">
-                  <h3>最近记录</h3>
-                  <span>分数不是评判，是一起走过的痕迹。</span>
+                  <h3>最近共同温度</h3>
+                  <span id="affectionSummary">等待记录</span>
                 </div>
-                <div class="chart" id="affectionChart" aria-label="好感度柱状图"></div>
+                <div class="radar-grid" id="affectionRadar"></div>
+                <div class="legend" id="affectionLegend"></div>
               </div>
             </div>
           </div>
         </section>
 
         <section class="section-inner" id="wishes">
-          <div class="section-heading">
-            <p class="eyebrow">FUTURE LIST</p>
-            <h2>未来想一起做的事</h2>
+          <div class="section-heading split-heading">
+            <div>
+              <p class="eyebrow">SHARED QUESTS</p>
+              <h2>共同愿望协作板</h2>
+            </div>
+            <p>每个愿望都可以指定发起人、负责人和下一步，让“以后一起”变成“这周谁来推进”。</p>
           </div>
-          <form class="inline-form" id="wishForm">
-            <input name="title" required placeholder="一起去哪里？想完成什么？" />
-            <select name="status">
+          <form class="panel wish-form" id="wishForm">
+            <input name="title" required placeholder="比如：一起去海边看日出" />
+            <select name="owner" id="wishOwnerSelect" required></select>
+            <select name="status" required>
               <option value="想做">想做</option>
               <option value="计划中">计划中</option>
               <option value="已完成">已完成</option>
             </select>
+            <input name="nextStep" placeholder="下一步：订票 / 查路线 / 选日期" />
             <button type="submit">添加愿望</button>
           </form>
           <div class="wish-board" id="wishBoard"></div>
         </section>
 
-        <section class="section-band" id="anniversaries">
-          <div class="section-inner">
-            <div class="section-heading">
-              <p class="eyebrow">SPECIAL DAYS</p>
-              <h2>纪念日</h2>
-            </div>
-            <div class="anniversary-grid" id="anniversaryList"></div>
-          </div>
-        </section>
-
-        <section class="section-inner" id="gallery">
-          <div class="section-heading">
-            <p class="eyebrow">PHOTO WALL</p>
-            <h2>相册精选</h2>
-          </div>
-          <div class="gallery-grid">
-            <figure>
-              <div class="photo-tile tile-one"></div>
-              <figcaption>一起散步的傍晚</figcaption>
-            </figure>
-            <figure>
-              <div class="photo-tile tile-two"></div>
-              <figcaption>周末咖啡和聊天</figcaption>
-            </figure>
-            <figure>
-              <div class="photo-tile tile-three"></div>
-              <figcaption>计划下一次旅行</figcaption>
-            </figure>
-          </div>
-        </section>
-
-        <section class="section-band" id="letters">
+        <section class="section-band" id="memories">
           <div class="section-inner two-column">
             <div>
               <div class="section-heading">
-                <p class="eyebrow">SECRET LETTERS</p>
-                <h2>悄悄话</h2>
+                <p class="eyebrow">MEMORY THREADS</p>
+                <h2>双人回忆线</h2>
               </div>
-              <div class="letter-stack" id="letterList"></div>
+              <div class="timeline" id="memoryList"></div>
             </div>
-            <form class="panel compact-form" id="letterForm">
-              <h3>写给她</h3>
+            <form class="panel compact-form" id="memoryForm">
+              <h3>新增回忆</h3>
+              <label>
+                记录人
+                <select name="person" required id="memoryPersonSelect"></select>
+              </label>
               <label>
                 标题
-                <input name="title" required placeholder="比如：今天想告诉你" />
+                <input name="title" required placeholder="比如：第一次一起看日落" />
+              </label>
+              <label>
+                日期
+                <input name="date" type="date" required />
+              </label>
+              <label>
+                标签
+                <input name="tag" placeholder="约会 / 旅行 / 日常" />
+              </label>
+              <label>
+                内容
+                <textarea name="body" required placeholder="写下你眼里的那一天。"></textarea>
+              </label>
+              <button type="submit">保存回忆</button>
+            </form>
+          </div>
+        </section>
+
+        <section class="section-inner" id="letters">
+          <div class="section-heading split-heading">
+            <div>
+              <p class="eyebrow">MESSAGE EXCHANGE</p>
+              <h2>互相留言</h2>
+            </div>
+            <p>可以写给现在的对方，也可以设定未来某天再打开。</p>
+          </div>
+          <div class="letter-layout">
+            <div class="letter-stack" id="letterList"></div>
+            <form class="panel compact-form" id="letterForm">
+              <h3>写一封留言</h3>
+              <label>
+                来自
+                <select name="from" required id="letterFromSelect"></select>
+              </label>
+              <label>
+                写给
+                <select name="to" required id="letterToSelect"></select>
+              </label>
+              <label>
+                标题
+                <input name="title" required placeholder="比如：今天想认真夸你" />
               </label>
               <label>
                 打开日期
@@ -197,9 +236,9 @@
               </label>
               <label>
                 内容
-                <textarea name="body" required placeholder="可以是一句想念，也可以是一封很长的信"></textarea>
+                <textarea name="body" required placeholder="写下想让对方看到的话。"></textarea>
               </label>
-              <button type="submit">保存悄悄话</button>
+              <button type="submit">保存留言</button>
             </form>
           </div>
         </section>

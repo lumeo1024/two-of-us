@@ -1,31 +1,53 @@
 const COUPLE_START_DATE = "2025-10-01T20:00:00+08:00";
 
+const people = [
+  { id: "me", name: "我", color: "#bd4f61", soft: "#fde7eb" },
+  { id: "her", name: "她", color: "#4f8a7b", soft: "#e0f1ec" }
+];
+
 const seedData = {
+  checkins: [
+    {
+      person: "me",
+      date: "2026-06-07",
+      mood: "想见面",
+      energy: 84,
+      note: "今天最开心的是想到周末可以一起吃饭。"
+    },
+    {
+      person: "her",
+      date: "2026-06-07",
+      mood: "被惦记",
+      energy: 88,
+      note: "希望下次见面可以慢慢散步，不赶时间。"
+    }
+  ],
+  affection: [
+    { person: "me", date: "2026-06-01", spark: 92, comfort: 90, understood: 86 },
+    { person: "her", date: "2026-06-01", spark: 90, comfort: 92, understood: 88 },
+    { person: "me", date: "2026-06-07", spark: 95, comfort: 91, understood: 90 },
+    { person: "her", date: "2026-06-07", spark: 93, comfort: 94, understood: 91 }
+  ],
   memories: [
     {
+      person: "me",
       title: "第一次认真计划未来",
       date: "2026-02-14",
       tag: "纪念",
       body: "把想去的城市、想吃的店、想看的电影都写了下来，突然觉得以后变得很具体。"
     },
     {
+      person: "her",
       title: "雨后的散步",
       date: "2026-01-20",
       tag: "日常",
-      body: "没有特别安排，只是走了很久。路灯、风和一句句没说完的话，都很值得记住。"
+      body: "没有特别安排，只是走了很久。路灯、风和一句没说完的话，都很值得记住。"
     }
   ],
-  affection: [
-    { date: "2026-05-10", me: 90, her: 88, note: "一起做饭" },
-    { date: "2026-05-17", me: 92, her: 90, note: "周末约会" },
-    { date: "2026-05-24", me: 95, her: 93, note: "收到小惊喜" },
-    { date: "2026-05-31", me: 94, her: 92, note: "聊了很多" },
-    { date: "2026-06-05", me: 96, her: 94, note: "很安心的一天" }
-  ],
   wishes: [
-    { title: "一起去海边看日出", status: "想做" },
-    { title: "拍一组正式合照", status: "计划中" },
-    { title: "做一次双人晚餐", status: "已完成" }
+    { title: "一起去海边看日出", owner: "both", status: "想做", nextStep: "先选一个周末" },
+    { title: "拍一组正式合照", owner: "her", status: "计划中", nextStep: "她来挑风格，我来预约" },
+    { title: "做一次双人晚餐", owner: "me", status: "已完成", nextStep: "下次换一道新菜" }
   ],
   anniversaries: [
     { title: "在一起纪念日", date: "2025-10-01" },
@@ -34,14 +56,23 @@ const seedData = {
   ],
   letters: [
     {
+      from: "me",
+      to: "her",
       title: "给未来的我们",
       openDate: "2026-10-01",
       body: "希望那天打开的时候，我们还能因为这些小事笑出来。"
+    },
+    {
+      from: "her",
+      to: "me",
+      title: "今天的夸奖",
+      openDate: "2026-06-01",
+      body: "谢谢你一直认真回应我的情绪，这件事我有感觉到。"
     }
   ]
 };
 
-const storageKey = "two-of-us-data";
+const storageKey = "two-of-us-data-v2";
 const state = loadState();
 
 function loadState() {
@@ -63,19 +94,21 @@ function saveState() {
   localStorage.setItem(storageKey, JSON.stringify(state));
 }
 
+function personById(id) {
+  return people.find((person) => person.id === id) || people[0];
+}
+
+function ownerLabel(owner) {
+  if (owner === "both") return "两个人";
+  return personById(owner).name;
+}
+
 function formatDate(dateString) {
   return new Intl.DateTimeFormat("zh-CN", {
     year: "numeric",
     month: "long",
     day: "numeric"
   }).format(new Date(`${dateString}T00:00:00`));
-}
-
-function daysBetween(targetDate) {
-  const today = new Date();
-  const target = new Date(`${targetDate}T00:00:00`);
-  const diff = target.getTime() - today.getTime();
-  return Math.ceil(diff / 86400000);
 }
 
 function nextOccurrence(dateString) {
@@ -101,10 +134,14 @@ function renderTimeTogether() {
   document.querySelector("#timeTogether").textContent = `${days} 天 ${hours} 小时 ${minutes} 分钟`;
 }
 
-function renderSweetness() {
-  const latest = [...state.affection].sort((a, b) => b.date.localeCompare(a.date))[0];
-  const score = latest ? Math.round((Number(latest.me) + Number(latest.her)) / 2) : 0;
-  document.querySelector("#sweetnessScore").textContent = `${score}%`;
+function renderParticipation() {
+  const since = new Date();
+  since.setDate(since.getDate() - 7);
+  const recent = state.checkins.filter((item) => new Date(`${item.date}T00:00:00`) >= since);
+  const uniquePeople = new Set(recent.map((item) => item.person));
+  document.querySelector("#participationScore").textContent = `${uniquePeople.size} / ${people.length}`;
+  document.querySelector("#participationMeta").textContent =
+    recent.length > 0 ? `最近 7 天共有 ${recent.length} 条同步。` : "这一周还没有同步记录。";
 }
 
 function renderNextAnniversary() {
@@ -120,46 +157,93 @@ function renderNextAnniversary() {
     diff <= 0 ? "就是今天。" : `还有 ${diff} 天，日期 ${formatDate(next.nextDate.toISOString().slice(0, 10))}`;
 }
 
-function renderMemories() {
-  const list = document.querySelector("#memoryList");
-  list.innerHTML = "";
+function renderPeople() {
+  const grid = document.querySelector("#personGrid");
+  grid.innerHTML = "";
 
-  [...state.memories]
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .forEach((memory) => {
-      const item = document.createElement("article");
-      item.className = "timeline-item";
-      item.innerHTML = `
-        <div class="item-meta">
-          <span>${formatDate(memory.date)}</span>
-          <span class="pill">${memory.tag || "回忆"}</span>
+  people.forEach((person) => {
+    const latestCheckin = [...state.checkins]
+      .filter((item) => item.person === person.id)
+      .sort((a, b) => b.date.localeCompare(a.date))[0];
+    const latestAffection = [...state.affection]
+      .filter((item) => item.person === person.id)
+      .sort((a, b) => b.date.localeCompare(a.date))[0];
+    const average = latestAffection
+      ? Math.round((latestAffection.spark + latestAffection.comfort + latestAffection.understood) / 3)
+      : 0;
+
+    const card = document.createElement("article");
+    card.className = "person-card";
+    card.style.setProperty("--person-color", person.color);
+    card.style.setProperty("--person-soft", person.soft);
+    card.innerHTML = `
+      <div class="person-top">
+        <span class="avatar">${person.name.slice(0, 1)}</span>
+        <div>
+          <h3>${person.name}的今日状态</h3>
+          <p>${latestCheckin ? formatDate(latestCheckin.date) : "还没有记录"}</p>
         </div>
-        <h3>${escapeHtml(memory.title)}</h3>
-        <p>${escapeHtml(memory.body)}</p>
-      `;
-      list.appendChild(item);
-    });
+      </div>
+      <strong>${latestCheckin ? escapeHtml(latestCheckin.mood) : "等待出现"}</strong>
+      <p>${latestCheckin ? escapeHtml(latestCheckin.note) : "今天还没有留下想说的话。"}</p>
+      <div class="energy-row">
+        <span>能量 ${latestCheckin ? latestCheckin.energy : 0}%</span>
+        <span>好感 ${average}%</span>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
 }
 
 function renderAffection() {
-  const chart = document.querySelector("#affectionChart");
-  chart.innerHTML = "";
+  const radar = document.querySelector("#affectionRadar");
+  const legend = document.querySelector("#affectionLegend");
+  radar.innerHTML = "";
+  legend.innerHTML = "";
 
-  [...state.affection]
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .slice(-6)
-    .forEach((record) => {
-      const group = document.createElement("div");
-      group.className = "bar-group";
-      group.innerHTML = `
-        <div class="bars">
-          <div class="bar me" title="我：${record.me}" style="height:${record.me}%"></div>
-          <div class="bar her" title="她：${record.her}" style="height:${record.her}%"></div>
+  const metrics = [
+    ["spark", "心动"],
+    ["comfort", "安心"],
+    ["understood", "被理解"]
+  ];
+
+  people.forEach((person) => {
+    const latest = [...state.affection]
+      .filter((item) => item.person === person.id)
+      .sort((a, b) => b.date.localeCompare(a.date))[0];
+
+    metrics.forEach(([key, label]) => {
+      const value = latest ? latest[key] : 0;
+      const item = document.createElement("div");
+      item.className = "radar-item";
+      item.innerHTML = `
+        <div class="radar-label">
+          <span>${person.name} · ${label}</span>
+          <strong>${value}</strong>
         </div>
-        <div class="bar-label">${record.date.slice(5)}</div>
+        <div class="meter"><span style="width:${value}%; background:${person.color}"></span></div>
       `;
-      chart.appendChild(group);
+      radar.appendChild(item);
     });
+
+    const badge = document.createElement("span");
+    badge.innerHTML = `<i style="background:${person.color}"></i>${person.name}`;
+    legend.appendChild(badge);
+  });
+
+  const latestScores = people
+    .map((person) =>
+      [...state.affection].filter((item) => item.person === person.id).sort((a, b) => b.date.localeCompare(a.date))[0]
+    )
+    .filter(Boolean);
+  const average =
+    latestScores.length === 0
+      ? 0
+      : Math.round(
+          latestScores.reduce((sum, item) => sum + item.spark + item.comfort + item.understood, 0) /
+            (latestScores.length * 3)
+        );
+  document.querySelector("#affectionSummary").textContent = `当前共同温度 ${average}%`;
 }
 
 function renderWishes() {
@@ -177,7 +261,10 @@ function renderWishes() {
       const card = document.createElement("div");
       card.className = "wish-card";
       card.innerHTML = `
-        <span>${escapeHtml(wish.title)}</span>
+        <div>
+          <strong>${escapeHtml(wish.title)}</strong>
+          <p>负责人：${ownerLabel(wish.owner)} · 下一步：${escapeHtml(wish.nextStep || "待补充")}</p>
+        </div>
         <button type="button" aria-label="推进愿望状态">推进</button>
       `;
       card.querySelector("button").addEventListener("click", () => advanceWish(wish));
@@ -188,22 +275,28 @@ function renderWishes() {
   });
 }
 
-function renderAnniversaries() {
-  const list = document.querySelector("#anniversaryList");
+function renderMemories() {
+  const list = document.querySelector("#memoryList");
   list.innerHTML = "";
 
-  state.anniversaries.forEach((item) => {
-    const days = daysBetween(item.date);
-    const card = document.createElement("article");
-    card.className = "anniversary-card";
-    card.innerHTML = `
-      <span class="card-label">${formatDate(item.date)}</span>
-      <h3>${escapeHtml(item.title)}</h3>
-      <strong>${days >= 0 ? `还有 ${days} 天` : `已经 ${Math.abs(days)} 天`}</strong>
-      <p>${days >= 0 ? "靠近这一天的时候，可以提前准备一个小惊喜。" : "已经发生过的日子，也值得每年重新庆祝。"}</p>
-    `;
-    list.appendChild(card);
-  });
+  [...state.memories]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .forEach((memory) => {
+      const person = personById(memory.person);
+      const item = document.createElement("article");
+      item.className = "timeline-item";
+      item.style.setProperty("--person-color", person.color);
+      item.innerHTML = `
+        <div class="item-meta">
+          <span>${formatDate(memory.date)}</span>
+          <span class="pill">${person.name}记录</span>
+          <span class="pill">${escapeHtml(memory.tag || "回忆")}</span>
+        </div>
+        <h3>${escapeHtml(memory.title)}</h3>
+        <p>${escapeHtml(memory.body)}</p>
+      `;
+      list.appendChild(item);
+    });
 }
 
 function renderLetters() {
@@ -217,11 +310,11 @@ function renderLetters() {
     item.className = `letter ${canOpen ? "" : "locked"}`;
     item.innerHTML = `
       <div class="item-meta">
-        <span>${canOpen ? "已解锁" : "未到打开日期"}</span>
-        <span class="pill">${formatDate(letter.openDate)}</span>
+        <span>${personById(letter.from).name} 写给 ${personById(letter.to).name}</span>
+        <span class="pill">${canOpen ? "已解锁" : "未到日期"} · ${formatDate(letter.openDate)}</span>
       </div>
       <h3>${escapeHtml(letter.title)}</h3>
-      <p>${canOpen ? escapeHtml(letter.body) : "这封信会在设定日期之后显示内容。"}</p>
+      <p>${canOpen ? escapeHtml(letter.body) : "这封留言会在设定日期之后显示内容。"}</p>
     `;
     list.appendChild(item);
   });
@@ -235,38 +328,61 @@ function advanceWish(wish) {
   renderWishes();
 }
 
+function populatePersonSelects() {
+  const simpleOptions = people.map((person) => `<option value="${person.id}">${person.name}</option>`).join("");
+  const ownerOptions = `<option value="both">两个人一起</option>${simpleOptions}`;
+
+  ["#personSelect", "#affectionPersonSelect", "#memoryPersonSelect", "#letterFromSelect", "#letterToSelect"].forEach(
+    (selector) => {
+      document.querySelector(selector).innerHTML = simpleOptions;
+    }
+  );
+  document.querySelector("#wishOwnerSelect").innerHTML = ownerOptions;
+  document.querySelector("#letterToSelect").value = people[1]?.id || people[0].id;
+}
+
 function bindForms() {
   const today = new Date().toISOString().slice(0, 10);
   document.querySelectorAll('input[type="date"]').forEach((input) => {
     if (!input.value) input.value = today;
   });
 
-  document.querySelector("#memoryForm").addEventListener("submit", (event) => {
+  const energyRange = document.querySelector('#checkinForm input[name="energy"]');
+  energyRange.addEventListener("input", () => {
+    document.querySelector("#energyOutput").textContent = energyRange.value;
+  });
+
+  document.querySelector("#checkinForm").addEventListener("submit", (event) => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget));
-    state.memories.push(data);
+    state.checkins.push({ ...data, energy: Number(data.energy) });
     saveState();
     event.currentTarget.reset();
-    renderMemories();
+    setDefaultDates();
+    renderPeople();
+    renderParticipation();
   });
 
   const affectionForm = document.querySelector("#affectionForm");
-  const meRange = affectionForm.elements.me;
-  const herRange = affectionForm.elements.her;
-  const syncOutputs = () => {
-    document.querySelector("#meOutput").textContent = meRange.value;
-    document.querySelector("#herOutput").textContent = herRange.value;
-  };
-  meRange.addEventListener("input", syncOutputs);
-  herRange.addEventListener("input", syncOutputs);
+  ["spark", "comfort", "understood"].forEach((name) => {
+    const range = affectionForm.elements[name];
+    range.addEventListener("input", () => {
+      document.querySelector(`#${name}Output`).textContent = range.value;
+    });
+  });
 
   affectionForm.addEventListener("submit", (event) => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget));
-    state.affection.push({ ...data, me: Number(data.me), her: Number(data.her) });
+    state.affection.push({
+      ...data,
+      spark: Number(data.spark),
+      comfort: Number(data.comfort),
+      understood: Number(data.understood)
+    });
     saveState();
     renderAffection();
-    renderSweetness();
+    renderPeople();
   });
 
   document.querySelector("#wishForm").addEventListener("submit", (event) => {
@@ -278,13 +394,31 @@ function bindForms() {
     renderWishes();
   });
 
+  document.querySelector("#memoryForm").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const data = Object.fromEntries(new FormData(event.currentTarget));
+    state.memories.push(data);
+    saveState();
+    event.currentTarget.reset();
+    setDefaultDates();
+    renderMemories();
+  });
+
   document.querySelector("#letterForm").addEventListener("submit", (event) => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget));
     state.letters.push(data);
     saveState();
     event.currentTarget.reset();
+    setDefaultDates();
     renderLetters();
+  });
+}
+
+function setDefaultDates() {
+  const today = new Date().toISOString().slice(0, 10);
+  document.querySelectorAll('input[type="date"]').forEach((input) => {
+    if (!input.value) input.value = today;
   });
 }
 
@@ -299,15 +433,16 @@ function escapeHtml(value) {
 
 function renderAll() {
   renderTimeTogether();
-  renderSweetness();
+  renderParticipation();
   renderNextAnniversary();
-  renderMemories();
+  renderPeople();
   renderAffection();
   renderWishes();
-  renderAnniversaries();
+  renderMemories();
   renderLetters();
 }
 
+populatePersonSelects();
 bindForms();
 renderAll();
 setInterval(renderTimeTogether, 30000);
